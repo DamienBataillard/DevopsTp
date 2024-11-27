@@ -4,7 +4,7 @@
 
  - Install and configure Prometheus / Grafana / AlertManager stack
  - Install node_exporter and view metrics on Grafana
- - Install Loki/promtail (log centralization) - Ansible
+ - Install and configure Loki/promtail with Ansible
 
 The main goal of this workshop is to deploy Prometheus and Grafana into your Minikube cluster using Helm charts. 
 Prometheus is used to monitor Kubernetes Cluster and other resources running on it. Globaly it is a systems and service monitoring tool.
