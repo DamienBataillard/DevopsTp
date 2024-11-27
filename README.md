@@ -42,10 +42,15 @@ Below is a summary of the content of each workshops. The TP-1, TP-2 and TP-3 fol
 
 
 Step 1 -  kubectl create namespace argocd
+
 Step 2 -  kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
 Step 3 -  k get all -n argocd
+
 Step 4 -  kubectl port-forward svc/argocd-server -n argocd 8081:443
+
 Step 5 -  kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
 
 
 
