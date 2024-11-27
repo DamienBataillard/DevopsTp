@@ -18,7 +18,11 @@ Step 1 - Add prometheus repository : `helm repo add prometheus-community https:/
 
 Step 2 - Install provided Helm chart for Prometheus : `helm install prometheus prometheus-community/prometheus`
 
-Step 3 - Expose the prometheus-server service via NodePort : `kubectl expose service prometheus-server --type=NodePort --target-port=9090 --name=prometheus-service`
+Step 3 - Get the Prometheus server URL by running these commands in the same shell
+```shell
+  export POD_NAME=$(kubectl get pods --namespace monitoring -l "app.kubernetes.io/name=prometheus,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace monitoring port-forward $POD_NAME 9090
+```
 
 Step 4 - Access Prometheus UI : `minikube service prometheus-service --url -n monitoring`
 
@@ -28,7 +32,12 @@ Step 4 - Access Prometheus UI : `minikube service prometheus-service --url -n mo
 
 * Chart name : 'grafana/grafana'. Remember to set your own password for admin access.
 
-* Expose Grafana service via NodePort in order to access Grafana UI with target port 3000.
+* Get the Grafana URL to visit by running these commands in the same
+
+ ```shell
+export POD_NAME=$(kubectl get pods --namespace monitoring -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
+     kubectl --namespace monitoring port-forward $POD_NAME 3000
+```
 
 * Access Grafana Web UI and configure a datasource with the deployed prometheus service url. 
 
@@ -36,8 +45,11 @@ Step 4 - Access Prometheus UI : `minikube service prometheus-service --url -n mo
 
 ## Configure AlertManager component ##
 
-* Expose AlertManager service via NodePort in order to access UI with target port 9093.
-
+* Get the Alertmanager URL by running these commands in the same shell :
+  ```shell
+  export POD_NAME=$(kubectl get pods --namespace monitoring -l "app.kubernetes.io/name=alertmanager,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace monitoring port-forward $POD_NAME 9093
+  ```
 * Analyze the content below, update the default prometheus configuration to set up an alert:
 
 ```yaml
@@ -73,14 +85,77 @@ Create the file *alertmanager-config.yaml* with the configuration and apply it w
 Loki is Grafana’s log aggregation component. Inspired by Prometheus, it’s highly scalable and capable of handling petabytes of log data.
 
 Install the component by using the  Helm chart provided by grafana :
+Create a file with the following contents:
+```yaml
+loki:
+  commonConfig:
+    replication_factor: 1
+  schemaConfig:
+    configs:
+      - from: "2024-04-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+  pattern_ingester:
+      enabled: true
+  limits_config:
+    allow_structured_metadata: true
+    volume_enabled: true
+    retention_period: 672h # 28 days retention
+  compactor:
+    retention_enabled: true 
+    delete_request_store: s3
+  ruler:
+    enable_api: true
 
-```console
-helm upgrade --install loki grafana/loki-stack --set promtail.enabled=false  --set grafana.enabled=false
+minio:
+  enabled: true
+      
+deploymentMode: SingleBinary
+
+singleBinary:
+  replicas: 1
+
+# Zero out replica counts of other deployment modes
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+
+ingester:
+  replicas: 0
+querier:
+  replicas: 0
+queryFrontend:
+  replicas: 0
+queryScheduler:
+  replicas: 0
+distributor:
+  replicas: 0
+compactor:
+  replicas: 0
+indexGateway:
+  replicas: 0
+bloomCompactor:
+  replicas: 0
+bloomGateway:
+  replicas: 0
 ```
 
-Expose Loki service via NodePort in order to access UI with target port 3100 : `kubectl expose service loki --type=NodePort --target-port=3100 --name=loki-service`
+... then install with the command:
 
-Run `$LOKI_SERVICE_URL/ready` and check the response. 
+```console
+helm install loki grafana/loki -f values.yaml -n monitoring
+```
+
+Expose Loki service  in order to access UI with target port 3100 : `kubectl port-forward --namespace monitoring svc/loki-gateway 3100:80`
+
+To continue the exercise, follow the instructions displayed on the console after installation.
 
 ## Install  Grafana/Loki Agent (promtail) by using Ansible ##
 
