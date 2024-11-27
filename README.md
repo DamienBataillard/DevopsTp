@@ -57,3 +57,6 @@ Step 5 -  kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="
 ## TP-3 - Monitoring and Incidents Management ##
 
 * Monitor the application / platform
+* Install and configure Prometheus / Grafana / AlertManager stack
+* Install node_exporter and view metrics on Grafana
+* Use Ansible and try to install and configure Loki/promtail ++
