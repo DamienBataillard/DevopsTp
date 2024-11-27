@@ -37,9 +37,6 @@ Below is a summary of the content of each workshops. The TP-1, TP-2 and TP-3 fol
   * Deployment in different environments
   * Scalability
   * Kubernetes package management
-***
-
-
 
 ## ArgoCD Overview ##
 
