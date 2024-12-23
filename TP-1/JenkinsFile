@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Clone repository') {
             steps {
-                git credentialsId: 'github-credentials', url: 'https://github.com/votre-utilisateur/devops-tp1.git'
+                git credentialsId: 'github-credentials', url: 'https://github.com/DamienBataillard/DevopsTp.git'
             }
         }
         stage('Build Backend') {
