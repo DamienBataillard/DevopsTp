@@ -3,23 +3,29 @@ pipeline {
     stages {
         stage('Clone repository') {
             steps {
+                echo "Cloning repository..."
                 git credentialsId: 'github-credentials', url: 'https://github.com/DamienBataillard/DevopsTp.git'
             }
         }
         stage('Build Backend') {
             steps {
+                echo "Building Backend..."
                 sh 'cd backend && docker build -t backend-bataillard:2002 .'
             }
         }
         stage('Build Frontend') {
             steps {
+                echo "Building Frontend..."
                 sh 'cd frontend && docker build -t frontend-bataillard:2002 .'
             }
         }
         stage('Run Containers') {
             steps {
+                echo "Running Docker containers..."
                 sh '''
-                docker network create --driver bridge efrei || true
+                docker rm -f backend frontend || true
+                docker network rm efrei || true
+                docker network create --driver bridge efrei
                 docker run -d --net=efrei -e POSTGRES_PASSWORD=postgres --name backend backend-bataillard:2002
                 docker run -d --net=efrei -p 8081:80 -e POSTGRES_PASSWORD=postgres --name frontend frontend-bataillard:2002
                 '''
@@ -27,11 +33,12 @@ pipeline {
         }
         stage('Push changes to GitHub') {
             steps {
+                echo "Pushing changes to GitHub..."
                 sh '''
                 git config user.email "damien.bataillard@efrei.net"
                 git config user.name "DamienBataillard"
                 git add .
-                git commit -m "Automated pipeline commit"
+                git diff-index --quiet HEAD || git commit -m "Automated pipeline commit"
                 git push origin main
                 '''
             }
