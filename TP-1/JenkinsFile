@@ -3,33 +3,33 @@ pipeline {
     stages {
         stage('Clone repository') {
             steps {
-                git credentialsId: 'your-github-credentials-id', url: 'https://github.com/votre-utilisateur/devops-tp1.git'
+                git credentialsId: 'github-credentials', url: 'https://github.com/votre-utilisateur/devops-tp1.git'
             }
         }
         stage('Build Backend') {
             steps {
-                sh 'cd backend && docker build -t backend-$NAME:YEAR_OF_BIRTH .'
+                sh 'cd backend && docker build -t backend-bataillard:2002 .'
             }
         }
         stage('Build Frontend') {
             steps {
-                sh 'cd frontend && docker build -t frontend-$NAME:YEAR_OF_BIRTH .'
+                sh 'cd frontend && docker build -t frontend-bataillard:2002 .'
             }
         }
         stage('Run Containers') {
             steps {
                 sh '''
                 docker network create --driver bridge efrei || true
-                docker run -d --net=efrei -e POSTGRES_PASSWORD=postgres --name backend backend-$NAME:YEAR_OF_BIRTH
-                docker run -d --net=efrei -p 8081:80 -e POSTGRES_PASSWORD=postgres --name frontend frontend-$NAME:YEAR_OF_BIRTH
+                docker run -d --net=efrei -e POSTGRES_PASSWORD=postgres --name backend backend-bataillard:2002
+                docker run -d --net=efrei -p 8081:80 -e POSTGRES_PASSWORD=postgres --name frontend frontend-bataillard:2002
                 '''
             }
         }
         stage('Push changes to GitHub') {
             steps {
                 sh '''
-                git config user.email "votre-email@gmail.com"
-                git config user.name "Votre Nom"
+                git config user.email "damien.bataillard@efrei.net"
+                git config user.name "DamienBataillard"
                 git add .
                 git commit -m "Automated pipeline commit"
                 git push origin main
